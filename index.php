@@ -8,7 +8,7 @@ define('IS_LOCAL', $_SERVER['SERVER_NAME'] === 'localhost');
 define('INCLUDE_PATH', IS_LOCAL ? '' : '/var/www/domains/couchbase.com/www.stage/htdocs/sites/all/libraries/download/');
 
 // true === /downloads-all; false === /downloads
-define('BY_VERSION', false);
+define('BY_VERSION', true);
 
 // show (or hide) recent builds table. Only works with BY_VERSION === true
 define('SHOW_BUILDS', true);
@@ -248,6 +248,9 @@ foreach ($product_names as $product_name) {
 }
 
 function just_the_latest($latest_builds) {
+  if(empty($latest_builds)) {
+    return array();
+  }
   function cmpBuildNumber($a, $b) {
     return $a['build'] > $b['build'];
   }
@@ -264,7 +267,10 @@ if (BY_VERSION === true) {
   foreach ($products as $product) {
     foreach ($product['releases'] as $release) {
       if (isset($major_version) && $major_version === $release['major_version']
-          && isset($has_build) && $has_build == !empty($release['build'])) {
+          ) {
+        if(!empty($release['build'])) {
+          continue;
+        }
         $current_product['releases'][] = $release;
         if ($has_build) {
           $latest_builds[] = $release;
@@ -281,11 +287,6 @@ if (BY_VERSION === true) {
           'has_build'=> $has_build,
           'releases'=> array($release)
         );
-        if($release['version'] == '2.0.1' || $release['version'] == '2.0.2') {
-          $current_product['title'] = 'Couchbase Server ' . $release['version'];
-          $minor = explode(".", $release['version']);
-          $current_product['id'] = $current_product['id'] . "-" . $minor[2];
-        }
         if ($has_build) {
           $latest_builds[] = $release;
         }
@@ -360,7 +361,6 @@ $products = array('products' => $products,
                   'staging' => (IS_LOCAL || IS_STAGING),
                   'show_next' => $show_next);
 $products['multiple_products'] = (count($product_names) > 1) ? true : false;
-
 
 if ($mimetype === 'application/json') {
   print_r(json_encode($products));
