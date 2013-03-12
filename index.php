@@ -281,6 +281,11 @@ if (BY_VERSION === true) {
           'has_build'=> $has_build,
           'releases'=> array($release)
         );
+        if($release['version'] == '2.0.1' || $release['version'] == '2.0.2') {
+          $current_product['title'] = 'Couchbase Server ' . $release['version'];
+          $minor = explode(".", $release['version']);
+          $current_product['id'] = $current_product['id'] . "-" . $minor[2];
+        }
         if ($has_build) {
           $latest_builds[] = $release;
         }
@@ -355,6 +360,7 @@ $products = array('products' => $products,
                   'staging' => (IS_LOCAL || IS_STAGING),
                   'show_next' => $show_next);
 $products['multiple_products'] = (count($product_names) > 1) ? true : false;
+
 
 if ($mimetype === 'application/json') {
   print_r(json_encode($products));
